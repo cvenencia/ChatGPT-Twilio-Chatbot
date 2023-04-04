@@ -1,12 +1,14 @@
+import os
 from flask import Flask, request, send_file
 from twilio.twiml.messaging_response import MessagingResponse
 from ChatGPT_FAQ import answer_query_with_context
 import pandas as pd
 from datetime import datetime
+os.chdir('/home/cvenencia/mysite/ChatGPT-Twilio-Chatbot')
 
 app = Flask(__name__)
 try:
-    chat_data = pd.read_csv('./chat_data.csv')
+    chat_data = pd.read_csv(os.path.abspath('chat_data.csv'))
 except FileNotFoundError:
     chat_data = pd.DataFrame(
         columns=['phone_number', 'message', 'response', 'timestamp']
@@ -17,7 +19,7 @@ chat_data.head()
 
 @app.route('/csv-data', methods=['GET'])
 def send_json_data():
-    return send_file('./chat_data.csv')
+    return send_file(os.path.abspath('chat_data.csv'))
 
 
 @app.route("/sms", methods=['GET', 'POST'])
@@ -34,7 +36,7 @@ def incoming_sms():
         'response': [answer],
         'timestamp': [datetime.now()],
     }), chat_data])
-    chat_data.to_csv('./chat_data.csv', index=False)
+    chat_data.to_csv(os.path.abspath('chat_data.csv'), index=False)
     print(f"Q: {prompt}\nA: {answer}\n")
 
     resp = MessagingResponse()
